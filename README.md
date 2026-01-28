@@ -3,7 +3,7 @@ A touch sensor is used to cycle through different facial expressions (emojis), m
 
 This project demonstrates bitmap rendering, scaling, animation, and touch input handling on a monochrome OLED screen.
 
-Features
+**Features:**
 
 Touch-based emoji switching
 
@@ -19,7 +19,7 @@ Modular and easy-to-extend emoji system
 
 
 
-User Interface
+**User Interface:**
 
 OLED Display:
 SH1106 128×64 SPI OLED used to display emojis
@@ -27,7 +27,7 @@ SH1106 128×64 SPI OLED used to display emojis
 Touch Control:
 Single touch input cycles through different emoji states
 
-Hardware Required
+**Hardware Required:**
 
 NodeMCU (ESP8266)
 
@@ -39,7 +39,7 @@ Jumper Wires
 
 
 
-How to Use
+**How to Use:**
 
 Power on the NodeMCU
 
@@ -53,7 +53,7 @@ Emoji stays visible until the next touch
 
 
 
-Software Architecture
+**Software Architecture:**
 
 Bitmap-based emoji rendering
 
@@ -69,7 +69,7 @@ Optimized for stable OLED refresh
 
 
 
-Libraries Used
+**Libraries Used:**
 
 Adafruit SH110X
 
@@ -80,7 +80,7 @@ SPI (built-in)
 Install all libraries via Arduino Library Manager.
 
 
-Important Notes
+**Important Notes:**
 
 Ensure correct SPI wiring for SH1106 displays
 
@@ -89,6 +89,6 @@ Use a safe GPIO pin for the touch sensor (D2 recommended)
 Avoid using SPI pins for touch input
 
 
-License
+**License**
 
 This project is open-source and free to use for educational and personal projects.
