@@ -1,0 +1,106 @@
+/* NodeMCU OLED Emoji Display with Touch Control
+
+This project demonstrates how to display centered expression emojis on a 128×64 SH1106 OLED display using NodeMCU (ESP8266).
+Emojis are shown as 32×32 monochrome bitmaps and change with a slide animation when a touch sensor is pressed. */
+
+
+/* Author name : Mohith K U */
+
+
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
+
+#define OLED_CS   D8
+#define OLED_DC   D4
+#define OLED_RST  D3
+#define TOUCH_PIN D2
+
+Adafruit_SH1106G display(128, 64, &SPI, OLED_DC, OLED_RST, OLED_CS);
+
+// ===== CONFIG =====
+const int scale  = 6;
+const int emojiOrigW = 16;
+const int emojiOrigH = 8;
+const int emojiW = emojiOrigW * scale;
+const int emojiH = emojiOrigH * scale;
+
+// ===== EMOJIS =====
+const unsigned char emoji_happy[] PROGMEM = {
+  0x3C,0x00,0x42,0x00,0xA5,0x00,0x81,0x00,
+  0xA5,0x00,0x99,0x00,0x42,0x00,0x3C,0x00
+};
+const unsigned char emoji_neutral[] PROGMEM = {
+  0x3C,0x00,0x42,0x00,0xA5,0x00,0x81,0x00,
+  0xBD,0x00,0x81,0x00,0x42,0x00,0x3C,0x00
+};
+
+const unsigned char* emojis[] = { emoji_happy, emoji_neutral };
+const int emojiCount = sizeof(emojis)/sizeof(emojis[0]);
+int currentEmoji = 0;
+
+// ===== DRAW SCALED BITMAP =====
+void drawEmojiAt(int x, int y, const unsigned char* bitmap) {
+  int byteWidth = (emojiOrigW + 7) / 8;
+  for (int j = 0; j < emojiOrigH; j++) {
+    for (int i = 0; i < emojiOrigW; i++) {
+      if (pgm_read_byte(bitmap + j*byteWidth + i/8) & (128 >> (i & 7))) {
+        display.fillRect(x + i*scale, y + j*scale, scale, scale, SH110X_WHITE);
+      }
+    }
+  }
+}
+
+// ===== DRAW STATIC RIGHT-ALIGNED EMOJI =====
+void drawEmojiStaticRight() {
+  display.clearDisplay();
+
+  int rightX = 128 - emojiW;
+  int rightY = (64 - emojiH) / 2;
+
+  drawEmojiAt(rightX, rightY, emojis[currentEmoji]);
+  display.display();
+}
+
+// ===== SLIDE FROM OFFSCREEN RIGHT → RIGHT END =====
+void slideEmojiFromRight() {
+  int rightX = 128 - emojiW;
+  int y = (64 - emojiH) / 2;
+
+  for (int x = 128; x >= rightX; x -= 4) {
+    display.clearDisplay();
+    drawEmojiAt(x, y, emojis[currentEmoji]);
+    display.display();
+    delay(12);
+  }
+
+  drawEmojiStaticRight(); // lock final position
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(TOUCH_PIN, INPUT);
+
+  display.begin(0x3C);
+  display.setRotation(0);
+
+  drawEmojiStaticRight();
+}
+
+void loop() {
+  static bool touched = false;
+  static unsigned long lastTouchTime = 0;
+
+  bool touchDetected = (digitalRead(TOUCH_PIN) == HIGH);
+
+  if (touchDetected && !touched && millis() - lastTouchTime > 300) {
+    touched = true;
+    lastTouchTime = millis();
+
+    currentEmoji = (currentEmoji + 1) % emojiCount;
+    slideEmojiFromRight();
+  }
+
+  if (!touchDetected) touched = false;
+  delay(20);
+}
